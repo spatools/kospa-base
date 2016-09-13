@@ -1,0 +1,40 @@
+{
+  "name": "@kospa/base",
+  "version": "0.1.0",
+  "description": "Base components for kospa framework",
+  "homepage": "https://github.com/spatools/kospa-base#readme",
+  "author": "Touchify (dev@touchify.co)",
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spatools/kospa-base.git"
+  },
+  "bugs": {
+    "url": "https://github.com/spatools/kospa-base/issues"
+  },
+  "files": [
+    "*.js",
+    "*.d.ts",
+    "package.json"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "npm run build",
+    "prepublish": "npm run build",
+    "prerelease": "rmdir /S /Q dist && tsc -p . --outDir dist && copy package.json dist && copy bower.json dist",
+    "release": "cd dist && git init && git checkout -b release && git add * && git commit -m \"Automatic release\" && git remote add origin https://github.com/spatools/kospa-base && git push origin release"
+  },
+  "keywords": [
+    "kospa",
+    "knockout",
+    "ko",
+    "spa",
+    "framework",
+    "base",
+    "app"
+  ],
+  "dependencies": {
+    "knockout": "^3.4.0"
+  }
+}

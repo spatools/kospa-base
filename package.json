@@ -1,14 +1,14 @@
 {
   "name": "@kospa/base",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Base components for kospa framework",
-  "homepage": "https://github.com/spatools/kospa-base#readme",
+  "homepage": "https://github.com/spatools/kospa-base",
   "author": "Touchify (dev@touchify.co)",
   "license": "MIT",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/spatools/kospa-base.git"
+    "url": "https://github.com/spatools/kospa-base.git"
   },
   "bugs": {
     "url": "https://github.com/spatools/kospa-base/issues"
@@ -19,9 +19,12 @@
     "package.json"
   ],
   "scripts": {
-    "build": "tsc -p .",
     "test": "npm run build",
-    "prepublish": "npm run build"
+    "build": "tsc -p .",
+    "build-release": "rmdir /S /Q dist && tsc -p . --outDir dist && copy package.json dist && copy bower.json dist",
+    "prepublish": "npm run build",
+    "prerelease": "npm run build-release && cd dist && git init && git remote add origin %npm_package_homepage% && git fetch --update-head-ok --depth=1 origin release && git branch --track release origin/release && git symbolic-ref HEAD refs/heads/release && git reset",
+    "release": "cd dist && git add * && git commit -m \"Release %npm_package_version%\" && git tag %npm_package_version% && git push origin release && git push --tags"
   },
   "keywords": [
     "kospa",

@@ -1,6 +1,6 @@
 {
-  "name": "@kospa/base",
-  "version": "0.1.0",
+  "name": "kospa-base",
+  "version": "0.1.1",
   "description": "Base components for kospa framework",
   "homepage": "https://github.com/kospa/base#readme",
   "author": "Touchify (dev@touchify.co)",

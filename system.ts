@@ -20,7 +20,7 @@ export function error(): void {
     }
 }
 
-export const extend = (function (Obj) {
+export const extend = (function (Obj: any) {
     if ("assign" in Obj) {
         return Obj.assign;
     }
@@ -53,7 +53,7 @@ export function module<T>(...names: string[]): Promise<T[]>;
 export function module<T>(): Promise<T | T[]> {
     var args = Array.prototype.slice.call(arguments);
     if (args.length === 0) {
-        return Promise.resolve();
+        return Promise.resolve(null);
     }
 
     return new Promise<any>((resolve, reject) => {

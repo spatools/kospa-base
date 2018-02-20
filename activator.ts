@@ -29,7 +29,7 @@ export interface ViewModel {
 }
 
 export interface ViewModelConstructor {
-    new (): ViewModel;
+    new(): ViewModel;
 
     getView?(...args: any[]): string;
 }
@@ -99,7 +99,7 @@ export function createActivateObservable<T extends ViewModel>(target?: any, conf
     target = target || ko.observable<T>();
     config = config || {};
 
-    let prom = Promise.resolve<any>();
+    let prom = Promise.resolve<any>(null);
 
     const result = system.extend(
         ko.computed<any>({

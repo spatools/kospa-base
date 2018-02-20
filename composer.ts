@@ -40,7 +40,7 @@ export function compose(element: string | Node, options: CompositionOptions): Pr
             element;
 
     return loadComponents(options)
-        .then(() => activation(node, options))
+        .then(options => activation(node, options))
         .catch(err => {
             if (err instanceof CompositionError) {
                 throw err;
@@ -75,7 +75,7 @@ ko.components.register("kospa-compose", { template: `<!--ko compose: $data--><!-
 
 //#region Loading Methods
 
-function loadComponents(options: CompositionOptions): Promise<void> {
+function loadComponents(options: CompositionOptions): Promise<CompositionLoadedOptions> {
 
     return loadViewModel(options.viewmodel)
         .then(vm => {
@@ -85,8 +85,9 @@ function loadComponents(options: CompositionOptions): Promise<void> {
 
             options.viewmodel = vm;
         })
-        .then(() => loadView(options.view, options.viewmodel, options.args))
-        .then(view => { options.view = view; });
+        .then(() => loadView(options.view, options.viewmodel as ViewModelOrConstructor, options.args))
+        .then(view => { options.view = view; })
+        .then(() => options as CompositionLoadedOptions);
 }
 
 function loadViewModel(viewmodel: string | ViewModelOrConstructor): Promise<ViewModelOrConstructor> {
@@ -113,7 +114,7 @@ function loadView(view: string, vm: ViewModelOrConstructor, args: any[]): Promis
 
 //#region Activation Methods
 
-function activation(node: Node, options: CompositionOptions): Promise<ViewModel> {
+function activation(node: Node, options: CompositionLoadedOptions): Promise<ViewModel> {
     if (!options.activate) {
         const
             oldVm = ko.dataFor(node) as ViewModel,
@@ -126,7 +127,7 @@ function activation(node: Node, options: CompositionOptions): Promise<ViewModel>
         .then(oldVm => activateNode(node, oldVm, options));
 }
 
-function activateNode(node: Node, oldVm: ViewModel, options: CompositionOptions): Promise<ViewModel> {
+function activateNode(node: Node, oldVm: ViewModel, options: CompositionLoadedOptions): Promise<ViewModel> {
     return activator.activate(options.viewmodel, options.args)
         .then(vm => applyBindings(node, oldVm, vm, options));
 }
@@ -176,3 +177,10 @@ function parseMarkup(markup: string): Element {
 }
 
 //#endregion
+
+interface CompositionLoadedOptions {
+    viewmodel: ViewModelOrConstructor;
+    view: string;
+    args?: any[];
+    activate?: boolean;
+}

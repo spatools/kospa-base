@@ -2,6 +2,11 @@
     "compilerOptions": {
         "target": "es5",
         "module": "umd",
-        "declaration": true
+        "declaration": true,
+        "lib": [
+            "es5",
+            "dom",
+            "es2015.promise"
+        ]
     }
 }

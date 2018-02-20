@@ -6,8 +6,7 @@ export interface ActivateObservableOptions {
 }
 export interface ActivateObservable<T extends ViewModel> extends ko.Observable<T>, PromiseLike<T> {
     (): T;
-    (val: T): void;
-    (val: string): void;
+    (val: string | T | ViewModelConstructor<T>): void;
     catch: (err: any) => any;
     onError: (err: any) => void;
     args: any[] | (() => any[]);
@@ -20,8 +19,8 @@ export interface ViewModel {
     bindingComplete?(node: Node, ...args: any[]): void | Promise<any>;
     getView?(...args: any[]): string;
 }
-export interface ViewModelConstructor {
-    new (): ViewModel;
+export interface ViewModelConstructor<T extends ViewModel = ViewModel> {
+    new (): T;
     getView?(...args: any[]): string;
 }
 export declare type ViewModelOrConstructor = ViewModel | ViewModelConstructor;

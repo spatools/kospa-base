@@ -14,7 +14,7 @@ export interface ActivateObservable<T extends ViewModel> extends ko.Observable<T
 }
 export interface ViewModel {
     activated?: boolean;
-    title?: string | ko.Observable<string>;
+    title?: ko.MaybeSubscribable<string>;
     activate?(...args: any[]): void | Promise<any>;
     deactivate?(closing?: boolean): void | Promise<any>;
     bindingComplete?(node: Node, ...args: any[]): void | Promise<any>;

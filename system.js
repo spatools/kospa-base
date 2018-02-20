@@ -1,12 +1,14 @@
 (function (factory) {
-    if (typeof module === 'object' && typeof module.exports === 'object') {
-        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    if (typeof module === "object" && typeof module.exports === "object") {
+        var v = factory(require, exports);
+        if (v !== undefined) module.exports = v;
     }
-    else if (typeof define === 'function' && define.amd) {
+    else if (typeof define === "function" && define.amd) {
         define(["require", "exports"], factory);
     }
 })(function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     exports.enableLog = true;
     function log() {
         if (exports.enableLog) {
@@ -42,7 +44,7 @@
     function module() {
         var args = Array.prototype.slice.call(arguments);
         if (args.length === 0) {
-            return Promise.resolve();
+            return Promise.resolve(null);
         }
         return new Promise(function (resolve, reject) {
             if (args.length === 1 && Array.isArray(args[0])) {
@@ -52,7 +54,7 @@
                 require(args, function () {
                     var mods = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        mods[_i - 0] = arguments[_i];
+                        mods[_i] = arguments[_i];
                     }
                     resolve(mods.length === 1 ? mods[0] : mods);
                 }, function (err) { reject(err); });

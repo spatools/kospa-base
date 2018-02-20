@@ -1,29 +1,37 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 (function (factory) {
-    if (typeof module === 'object' && typeof module.exports === 'object') {
-        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    if (typeof module === "object" && typeof module.exports === "object") {
+        var v = factory(require, exports);
+        if (v !== undefined) module.exports = v;
     }
-    else if (typeof define === 'function' && define.amd) {
+    else if (typeof define === "function" && define.amd) {
         define(["require", "exports", "knockout", "./system", "./activator"], factory);
     }
 })(function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var ko = require("knockout");
     var system = require("./system");
     var activator = require("./activator");
-    var CompositionError = (function (_super) {
+    var CompositionError = /** @class */ (function (_super) {
         __extends(CompositionError, _super);
         function CompositionError(vm, innerError) {
-            _super.call(this, "composer: " + (innerError ? innerError : "Unknown"));
-            this.vm = vm;
-            this.innerError = innerError;
+            var _this = _super.call(this, "composer: " + (innerError ? innerError : "Unknown")) || this;
+            _this.vm = vm;
+            _this.innerError = innerError;
             if (innerError && typeof innerError.stack !== "undefined") {
-                Object.defineProperty(this, "stack", { get: function () { return innerError.stack; } });
+                Object.defineProperty(_this, "stack", { get: function () { return innerError.stack; } });
             }
+            return _this;
         }
         return CompositionError;
     }(Error));
@@ -38,7 +46,7 @@ var __extends = (this && this.__extends) || function (d, b) {
             document.getElementById(element) :
             element;
         return loadComponents(options)
-            .then(function () { return activation(node, options); })
+            .then(function (options) { return activation(node, options); })
             .catch(function (err) {
             if (err instanceof CompositionError) {
                 throw err;
@@ -74,7 +82,8 @@ var __extends = (this && this.__extends) || function (d, b) {
             options.viewmodel = vm;
         })
             .then(function () { return loadView(options.view, options.viewmodel, options.args); })
-            .then(function (view) { options.view = view; });
+            .then(function (view) { options.view = view; })
+            .then(function () { return options; });
     }
     function loadViewModel(viewmodel) {
         return typeof viewmodel === "string" ?
@@ -140,4 +149,3 @@ var __extends = (this && this.__extends) || function (d, b) {
         return parser.parseFromString(markup, "text/html").body;
     }
 });
-//#endregion

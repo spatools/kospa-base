@@ -178,9 +178,6 @@ function parseMarkup(markup: string): Element {
 
 //#endregion
 
-interface CompositionLoadedOptions {
+interface CompositionLoadedOptions extends CompositionOptions {
     viewmodel: ViewModelOrConstructor;
-    view: string;
-    args?: any[];
-    activate?: boolean;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@kospa/base",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Base components for kospa framework",
   "homepage": "https://github.com/spatools/kospa-base",
   "author": "Touchify (dev@touchify.co)",
@@ -36,11 +36,10 @@
     "app"
   ],
   "dependencies": {
-    "@types/knockout": "typed-contrib/knockout",
-    "knockout": "^3.4.0"
+    "knockout": "^3.5.0-rc2"
   },
   "devDependencies": {
     "@types/requirejs": "^2.1.31",
-    "typescript": "^2.7.2"
+    "typescript": "^3.3.3"
   }
 }

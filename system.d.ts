@@ -7,6 +7,7 @@ export declare let enableLog: boolean;
 export declare function log(...args: any[]): void;
 export declare function error(...args: any[]): void;
 export declare const extend: (target: any, ...sources: any[]) => any;
+export declare function module<T>(): Promise<null>;
 export declare function module<T>(name: string): Promise<T>;
 export declare function module<T>(names: string[]): Promise<T[]>;
 export declare function module<T>(...names: string[]): Promise<T[]>;

@@ -1,4 +1,3 @@
-/// <reference types="knockout" />
 import * as ko from "knockout";
 export interface ActivateObservableOptions {
     args?: any[] | (() => any[]);
@@ -11,13 +10,14 @@ export interface ActivateObservable<T extends ViewModel> extends ko.Observable<T
     onError: (err: any) => void;
     args: any[] | (() => any[]);
 }
+export declare type View = string | Node[] | DocumentFragment;
 export interface ViewModel {
     activated?: boolean;
     title?: ko.MaybeSubscribable<string>;
     activate?(...args: any[]): void | Promise<any>;
     deactivate?(closing?: boolean): void | Promise<any>;
     bindingComplete?(node: Node, ...args: any[]): void | Promise<any>;
-    getView?(...args: any[]): string;
+    getView?(...args: any[]): View;
 }
 export interface ViewModelConstructor<T extends ViewModel = ViewModel> {
     new (): T;
@@ -30,4 +30,4 @@ export declare function deactivate(vm: ViewModel, newVm?: ViewModel): Promise<Vi
 export declare function bindingComplete(node: Node, vm: ViewModel, args?: any[]): Promise<ViewModel>;
 export declare function createActivateObservable<T extends ViewModel>(): ActivateObservable<T>;
 export declare function createActivateObservable<T extends ViewModel>(config: ActivateObservableOptions): ActivateObservable<T>;
-export declare function createActivateObservable<T extends ViewModel>(target: ko.Observable<T>, config: ActivateObservableOptions): ActivateObservable<T>;
+export declare function createActivateObservable<T extends ViewModel>(target: ko.Observable<T>, config?: ActivateObservableOptions): ActivateObservable<T>;

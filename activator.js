@@ -21,7 +21,7 @@
             return Promise.resolve(vm);
         }
         try {
-            return Promise.resolve(vm.activate.apply(vm, args)).then(function () {
+            return Promise.resolve(vm.activate.apply(vm, args || [])).then(function () {
                 vm.activated = true;
                 return vm;
             });
@@ -51,7 +51,7 @@
             return Promise.resolve(vm);
         }
         try {
-            return Promise.resolve(vm.bindingComplete.apply(vm, [node].concat(args)))
+            return Promise.resolve(vm.bindingComplete.apply(vm, [node].concat(args || [])))
                 .then(function () { return vm; });
         }
         catch (err) {
@@ -89,7 +89,7 @@
             }
         }), {
             then: function (onSuccess, onError) { return prom.then(onSuccess, onError); },
-            catch: function (err) { return prom.catch(err); },
+            catch: function (onError) { return prom.catch(onError); },
             args: config.args || [],
             onError: config.onError || (function (err) {
                 system.error("activator>", err);

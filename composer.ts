@@ -160,13 +160,13 @@ function activation(node: Node, options: CompositionLoadedOptions): Promise<View
         .then(oldVm => activateNode(node, oldVm, options));
 }
 
-function activateNode(node: Node, oldVm: ViewModel, options: CompositionLoadedOptions): Promise<ViewModel> {
+function activateNode(node: Node, oldVm: ViewModel | null | undefined, options: CompositionLoadedOptions): Promise<ViewModel> {
     return activator.activate(options.viewmodel, options.args)
         .then(vm => applyBindings(node, oldVm, vm, options));
 }
 
-function deactivateNode(node: Node, newVm: ViewModelOrConstructor): Promise<ViewModel> {
-    const oldVm = ko.utils.domData.get<ViewModel>(node, "kospa_vm");
+function deactivateNode(node: Node, newVm: ViewModelOrConstructor): Promise<ViewModel | null | undefined> {
+    const oldVm = ko.utils.domData.get<ViewModel | null | undefined>(node, "kospa_vm");
     return activator.deactivate(oldVm, newVm);
 }
 
@@ -174,7 +174,7 @@ function deactivateNode(node: Node, newVm: ViewModelOrConstructor): Promise<View
 
 //#region Binding Methods
 
-function applyBindings(node: Node, oldVm: ViewModel, vm: ViewModel, options: CompositionLoadedOptions): Promise<ViewModel> {
+function applyBindings(node: Node, oldVm: ViewModel | null | undefined, vm: ViewModel, options: CompositionLoadedOptions): Promise<ViewModel> {
     if (oldVm === vm) {
         return Promise.resolve(vm);
     }

@@ -6,7 +6,7 @@ export interface ActivateObservableOptions {
     onError?: (err: any) => any;
 }
 
-export interface ActivateObservable<T extends ViewModel> extends ko.Observable<T>, PromiseLike<T> {
+export interface ActivateObservable<T extends ViewModel | null | undefined> extends ko.Observable<T>, PromiseLike<T> {
     (): T;
     (val: string | T | ViewModelConstructor<T>): void;
 
@@ -29,7 +29,7 @@ export interface ViewModel {
     getView?(...args: any[]): View;
 }
 
-export interface ViewModelConstructor<T extends ViewModel = ViewModel> {
+export interface ViewModelConstructor<T extends ViewModel | null | undefined = ViewModel> {
     new(): T;
 
     getView?(...args: any[]): string;
@@ -37,11 +37,17 @@ export interface ViewModelConstructor<T extends ViewModel = ViewModel> {
 
 export type ViewModelOrConstructor = ViewModel | ViewModelConstructor;
 
-export function constructs(VmModule: ViewModelOrConstructor): ViewModel {
+export function constructs(VmModule: null | undefined): null | undefined;
+export function constructs(VmModule: ViewModelOrConstructor): ViewModel;
+export function constructs(VmModule: ViewModelOrConstructor | null | undefined): ViewModel | null | undefined;
+export function constructs(VmModule: ViewModelOrConstructor | null | undefined): ViewModel | null | undefined {
     return isConstructor(VmModule) ? new VmModule() : VmModule;
 }
 
-export function activate(VmModule: ViewModelOrConstructor, args?: any[]): Promise<ViewModel> {
+export function activate(VmModule: null | undefined, args?: any[]): Promise<null | undefined>;
+export function activate(VmModule: ViewModelOrConstructor, args?: any[]): Promise<ViewModel>;
+export function activate(VmModule: ViewModelOrConstructor | null | undefined, args?: any[]): Promise<ViewModel | null | undefined>;
+export function activate(VmModule: ViewModelOrConstructor | null | undefined, args?: any[]): Promise<ViewModel | null | undefined> {
     const vm = constructs(VmModule);
     if (!vm || vm.activated || typeof vm.activate !== "function") {
         return Promise.resolve(vm);
@@ -58,7 +64,10 @@ export function activate(VmModule: ViewModelOrConstructor, args?: any[]): Promis
     }
 }
 
-export function deactivate(vm: ViewModel, newVm?: ViewModel): Promise<ViewModel> {
+export function deactivate(vm: null | undefined, newVm?: ViewModel | null | undefined): Promise<null | undefined>;
+export function deactivate(vm: ViewModel, newVm?: ViewModel | null | undefined): Promise<ViewModel | null | undefined>;
+export function deactivate(vm: ViewModel | null | undefined, newVm?: ViewModel | null | undefined): Promise<ViewModel | null | undefined>;
+export function deactivate(vm: ViewModel | null | undefined, newVm?: ViewModel | null | undefined): Promise<ViewModel | null | undefined> {
     if (!vm || !vm.activated || typeof vm.deactivate !== "function") {
         return Promise.resolve(vm);
     }
@@ -74,7 +83,10 @@ export function deactivate(vm: ViewModel, newVm?: ViewModel): Promise<ViewModel>
     }
 }
 
-export function bindingComplete(node: Node, vm: ViewModel, args?: any[]): Promise<ViewModel> {
+export function bindingComplete(node: Node, vm: null | undefined, args?: any[]): Promise<null | undefined>;
+export function bindingComplete(node: Node, vm: ViewModel, args?: any[]): Promise<ViewModel>;
+export function bindingComplete(node: Node, vm: ViewModel | null | undefined, args?: any[]): Promise<ViewModel | null | undefined>;
+export function bindingComplete(node: Node, vm: ViewModel | null | undefined, args?: any[]): Promise<ViewModel | null | undefined> {
     if (!vm || typeof vm.bindingComplete !== "function") {
         return Promise.resolve(vm);
     }
@@ -88,10 +100,10 @@ export function bindingComplete(node: Node, vm: ViewModel, args?: any[]): Promis
     }
 }
 
-export function createActivateObservable<T extends ViewModel>(): ActivateObservable<T>;
-export function createActivateObservable<T extends ViewModel>(config: ActivateObservableOptions): ActivateObservable<T>;
-export function createActivateObservable<T extends ViewModel>(target: ko.Observable<T>, config?: ActivateObservableOptions): ActivateObservable<T>;
-export function createActivateObservable<T extends ViewModel>(target?: any, config?: ActivateObservableOptions): ActivateObservable<T> {
+export function createActivateObservable<T extends ViewModel | null | undefined>(): ActivateObservable<T>;
+export function createActivateObservable<T extends ViewModel | null | undefined>(config: ActivateObservableOptions): ActivateObservable<T>;
+export function createActivateObservable<T extends ViewModel | null | undefined>(target: ko.Observable<T>, config?: ActivateObservableOptions): ActivateObservable<T>;
+export function createActivateObservable<T extends ViewModel | null | undefined>(target?: any, config?: ActivateObservableOptions): ActivateObservable<T> {
     if (!config && !ko.isWriteableObservable(target)) {
         config = target;
         target = null;

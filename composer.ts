@@ -2,15 +2,18 @@
 import * as system from "./system";
 import * as activator from "./activator";
 
+export type View = activator.View;
 export type ViewModel = activator.ViewModel;
 export type ViewModelConstructor = activator.ViewModelConstructor;
 export type ViewModelOrConstructor = activator.ViewModelOrConstructor;
+
+const VIEW_CACHE = {} as { [key: string]: Node[] };
 
 //#region Composition
 
 export interface CompositionOptions {
     viewmodel: string | ViewModelOrConstructor;
-    view: string;
+    view: View;
     args?: any[];
     activate?: boolean;
 }
@@ -39,6 +42,10 @@ export function compose(element: string | Node, options: CompositionOptions): Pr
             document.getElementById(element) :
             element;
 
+    if (!node) {
+        throw new CompositionError(options.viewmodel, `Can't find element: ${element}`);
+    }
+
     return loadComponents(options)
         .then(options => activation(node, options))
         .catch(err => {
@@ -56,13 +63,11 @@ export function compose(element: string | Node, options: CompositionOptions): Pr
 //#region Knockout Handlers
 
 ko.bindingHandlers["compose"] = {
-    init: (element: Node, valueAccessor) => {
-        const container = document.createElement("div");
-        ko.virtualElements.setDomNodeChildren(element, [container]);
+    init() {
+        return { controlsDescendantBindings: true };
     },
-    update: (element: Node, valueAccessor) => {
-        const container = ko.virtualElements.firstChild(element) as Node;
-        compose(container, ko.toJS(valueAccessor()))
+    update(element: Node, valueAccessor) {
+        compose(element, ko.toJS(valueAccessor()))
             .catch(system.error);
     }
 } as ko.BindingHandler;
@@ -96,18 +101,46 @@ function loadViewModel(viewmodel: string | ViewModelOrConstructor): Promise<View
         Promise.resolve(viewmodel);
 }
 
-function loadView(view: string, vm: ViewModelOrConstructor, args: any[]): Promise<string> {
+function loadView(view: View, vm: ViewModelOrConstructor, args?: any[]): Promise<Node[]> {
     if (vm && typeof vm.getView === "function") {
-        view = vm.getView(...args) || view;
+        view = vm.getView(...(args || [])) || view;
     }
 
     if (!view) {
         return Promise.reject(new CompositionError(vm, "No view is provided!"));
     }
 
-    return view.indexOf("<") === -1 ?
-        system.module<string>("text!" + view) :
-        Promise.resolve(view);
+    return parseView(view);
+}
+
+function parseView(view: View): Promise<Node[]> {
+    if (typeof view === "string") {
+        if (VIEW_CACHE[view]) {
+            return Promise.resolve(VIEW_CACHE[view]);
+        }
+
+        if (view.indexOf("<") === -1) {
+            return system.module<string>("text!" + view)
+                .then(tpl => parseView(tpl))
+                .then(tpl => VIEW_CACHE[view] = tpl)
+        }
+
+        return Promise.resolve(ko.utils.parseHtmlFragment(view))
+            .then(tpl => VIEW_CACHE[view] = tpl);
+
+    }
+
+    if (Array.isArray(view)) {
+        return Promise.resolve(view);
+    }
+
+    if (isDocumentFragment(view)) {
+        return Promise.resolve(
+            arrayFromNodeList(view.childNodes)
+        );
+    }
+
+    throw new Error(`Unknown view value: ${view}`);
 }
 
 //#endregion
@@ -117,7 +150,7 @@ function loadView(view: string, vm: ViewModelOrConstructor, args: any[]): Promis
 function activation(node: Node, options: CompositionLoadedOptions): Promise<ViewModel> {
     if (!options.activate) {
         const
-            oldVm = ko.dataFor(node) as ViewModel,
+            oldVm = ko.utils.domData.get<ViewModel>(node, "kospa_vm"),
             vm = activator.constructs(options.viewmodel);
 
         return applyBindings(node, oldVm, vm, options);
@@ -133,51 +166,55 @@ function activateNode(node: Node, oldVm: ViewModel, options: CompositionLoadedOp
 }
 
 function deactivateNode(node: Node, newVm: ViewModelOrConstructor): Promise<ViewModel> {
-    const oldVm = ko.dataFor(node) as ViewModel;
-
-    // Do not deactivate parents
-    return oldVm === ko.dataFor(node.parentNode) ?
-        Promise.resolve(oldVm) :
-        activator.deactivate(oldVm, newVm);
+    const oldVm = ko.utils.domData.get<ViewModel>(node, "kospa_vm");
+    return activator.deactivate(oldVm, newVm);
 }
 
 //#endregion
 
 //#region Binding Methods
 
-function applyBindings(node: Node, oldVm: ViewModel, vm: ViewModel, options: CompositionOptions): Promise<ViewModel> {
+function applyBindings(node: Node, oldVm: ViewModel, vm: ViewModel, options: CompositionLoadedOptions): Promise<ViewModel> {
     if (oldVm === vm) {
-        return;
+        return Promise.resolve(vm);
     }
 
     clean(node);
-    moveNodes(parseMarkup(options.view), node);
-    ko.applyBindings(vm, node);
+    moveNodes(options.view, node);
+    ko.applyBindingsToDescendants(vm, node);
+    ko.utils.domData.set(node, "kospa_vm", vm);
 
     return activator.bindingComplete(node, vm, options.args);
 }
 
 function clean(node: Node): void {
-    ko.cleanNode(node as Element);
-
-    while (node.firstChild) {
-        node.removeChild(node.firstChild);
-    }
+    ko.virtualElements.emptyNode(node);
 }
 
-function moveNodes(source: Node, dest: Node): void {
-    while (source.firstChild) {
-        dest.appendChild(source.firstChild);
-    }
+function moveNodes(nodes: Node[], dest: Node): void {
+    ko.virtualElements.setDomNodeChildren(
+        dest,
+        cloneNodes(nodes)
+    );
 }
 
-function parseMarkup(markup: string): Element {
-    const parser = new DOMParser();
-    return parser.parseFromString(markup, "text/html").body;
+function cloneNodes(nodes: Node[]): Node[] {
+    return nodes.map(node => node.cloneNode(true));
+}
+
+function arrayFromNodeList(nodes: Node[] | NodeList): Node[] {
+    return Array.prototype.slice.call(nodes);
+}
+
+function isDocumentFragment(obj: any): obj is DocumentFragment {
+    return typeof DocumentFragment !== "undefined" ?
+        obj instanceof DocumentFragment :
+        obj && obj.nodeType === 11;
 }
 
 //#endregion
 
 interface CompositionLoadedOptions extends CompositionOptions {
     viewmodel: ViewModelOrConstructor;
+    view: Node[];
 }

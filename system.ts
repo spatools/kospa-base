@@ -9,14 +9,14 @@ export let enableLog = true;
 export function log(...args: any[]): void;
 export function log(): void {
     if (enableLog) {
-        console.log.apply(console, arguments);
+        console.log.apply(console, <any>arguments);
     }
 }
 
 export function error(...args: any[]): void;
 export function error(): void {
     if (enableLog) {
-        console.error.apply(console, arguments);
+        console.error.apply(console, <any>arguments);
     }
 }
 
@@ -34,7 +34,7 @@ export const extend = (function (Obj: any) {
             l = arguments.length,
             i = 1, S;
 
-        function assignKey(key: string): void {
+        function assignKey(this: any, key: string): void {
             T[key] = this[key];
         }
 
@@ -47,10 +47,11 @@ export const extend = (function (Obj: any) {
     };
 })(Object) as (target: any, ...sources: any[]) => any;
 
+export function module<T>(): Promise<null>;
 export function module<T>(name: string): Promise<T>;
 export function module<T>(names: string[]): Promise<T[]>;
 export function module<T>(...names: string[]): Promise<T[]>;
-export function module<T>(): Promise<T | T[]> {
+export function module<T>(): Promise<T | T[] | null> {
     var args = Array.prototype.slice.call(arguments);
     if (args.length === 0) {
         return Promise.resolve(null);
@@ -65,7 +66,7 @@ export function module<T>(): Promise<T | T[]> {
             require(
                 args,
                 (...mods: any[]) => { resolve(mods.length === 1 ? mods[0] : mods); },
-                (err) => { reject(err); }
+                (err: Error) => { reject(err); }
             );
         }
         catch (e) {
@@ -81,7 +82,7 @@ export function deferred<T>(): Deferred<T> {
         resolve: null,
         reject: null,
         promise: null
-    } as Deferred<any>;
+    } as any;
 
     defer.promise = new Promise((resolve, reject) => {
         defer.resolve = resolve;

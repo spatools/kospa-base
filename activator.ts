@@ -16,6 +16,8 @@ export interface ActivateObservable<T extends ViewModel> extends ko.Observable<T
     args: any[] | (() => any[]);
 }
 
+export type View = string | Node[] | DocumentFragment;
+
 export interface ViewModel {
     activated?: boolean;
     title?: ko.MaybeSubscribable<string>;
@@ -24,7 +26,7 @@ export interface ViewModel {
     deactivate?(closing?: boolean): void | Promise<any>;
     bindingComplete?(node: Node, ...args: any[]): void | Promise<any>;
 
-    getView?(...args: any[]): string;
+    getView?(...args: any[]): View;
 }
 
 export interface ViewModelConstructor<T extends ViewModel = ViewModel> {
@@ -46,7 +48,7 @@ export function activate(VmModule: ViewModelOrConstructor, args?: any[]): Promis
     }
 
     try {
-        return Promise.resolve(vm.activate.apply(vm, args)).then(() => {
+        return Promise.resolve(vm.activate.apply(vm, args || [])).then(() => {
             vm.activated = true;
             return vm;
         });
@@ -78,7 +80,7 @@ export function bindingComplete(node: Node, vm: ViewModel, args?: any[]): Promis
     }
 
     try {
-        return Promise.resolve(vm.bindingComplete.apply(vm, [node].concat(args)))
+        return Promise.resolve(vm.bindingComplete.apply(vm, <any>[node].concat(args || [])))
             .then(() => vm);
     }
     catch (err) {
@@ -88,7 +90,7 @@ export function bindingComplete(node: Node, vm: ViewModel, args?: any[]): Promis
 
 export function createActivateObservable<T extends ViewModel>(): ActivateObservable<T>;
 export function createActivateObservable<T extends ViewModel>(config: ActivateObservableOptions): ActivateObservable<T>;
-export function createActivateObservable<T extends ViewModel>(target: ko.Observable<T>, config: ActivateObservableOptions): ActivateObservable<T>;
+export function createActivateObservable<T extends ViewModel>(target: ko.Observable<T>, config?: ActivateObservableOptions): ActivateObservable<T>;
 export function createActivateObservable<T extends ViewModel>(target?: any, config?: ActivateObservableOptions): ActivateObservable<T> {
     if (!config && !ko.isWriteableObservable(target)) {
         config = target;
@@ -127,8 +129,8 @@ export function createActivateObservable<T extends ViewModel>(target?: any, conf
             }
         }),
         {
-            then: (onSuccess, onError) => prom.then(onSuccess, onError),
-            catch: (err) => prom.catch(err),
+            then: (onSuccess: (res: any) => void, onError: (reason: any) => void) => prom.then(onSuccess, onError),
+            catch: (onError: (reason: any) => void) => prom.catch(onError),
 
             args: config.args || [],
             onError: config.onError || (err => {
